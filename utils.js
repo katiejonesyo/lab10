@@ -35,6 +35,20 @@ function mungeTrail(trail) {
     }).slice(0, 10);
 }
 
+function mungeYelp(yelp) {
+
+    return yelp.business.map(oneBusiness => {
+        return {
+            name: oneBusiness.name,
+            image_url: oneBusiness.image_url,
+            price: oneBusiness.price,
+            rating: oneBusiness.rating,
+            url: oneBusiness.url
+        }
+    })
+}
+
+
 module.exports = {
-    mungeLocation, mungeWeather, mungeTrail
+    mungeLocation, mungeWeather, mungeTrail, mungeYelp
 };

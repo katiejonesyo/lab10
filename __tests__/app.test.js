@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { mungeLocation, mungeWeather } = require('../utils.js');
+const { mungeLocation, mungeWeather, mungeTrail} = require('../utils.js');
 
 describe('app routes', () => {
   describe('routes', () => {
@@ -39,7 +39,7 @@ describe('app routes', () => {
         expect(result).toEqual(expectation);
     });
 
-    text('returns munged weather', async () => {
+    test('returns munged weather', async () => {
 
       const rawWeather = {
         'data' : [
