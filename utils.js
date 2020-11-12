@@ -18,7 +18,7 @@ function mungeWeather(location) {
 
 
 function mungeTrail(trail) {
-
+    console.log(trail.trails);
     return trail.trails.map(item => {
         return {
             name: item.name,
@@ -29,8 +29,8 @@ function mungeTrail(trail) {
             summary: item.summary,
             trail_url: item.url,
             conditions: item.conditionStatus,
-            condition_date: item.conditionDate.split('')[0],
-            condition_time: item.conditionTime.split('')[1],
+            condition_date: item.conditionDate.split(' ')[0],
+            condition_time: item.conditionDate.split(' ')[1],
          };
     }).slice(0, 10);
 }
