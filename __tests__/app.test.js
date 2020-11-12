@@ -1,64 +1,857 @@
 require('dotenv').config();
 
-const { execSync } = require('child_process');
-
-const fakeRequest = require('supertest');
-const app = require('../lib/app');
-const client = require('../lib/client');
+const { mungeLocation, mungeWeather, mungeTrail, mungeYelp} = require('../utils.js');
 
 describe('app routes', () => {
   describe('routes', () => {
-    let token;
-  
-    beforeAll(async done => {
-      execSync('npm run setup-db');
-  
-      client.connect();
-  
-      const signInData = await fakeRequest(app)
-        .post('/auth/signup')
-        .send({
-          email: 'jon@user.com',
-          password: '1234'
-        });
+
+    test('returns munge location', async () => {
+
+      const oldLocation = [
+        {
+          'place_id': '282983083',
+          'licence': 'https://locationiq.com/attribution',
+          'osm_type': 'relation',
+          'osm_id': '186579',
+          'boundingbox': [
+            '45.432536',
+            '45.6528812',
+            '-122.8367489',
+            '-122.4720252'
+          ],
+          'lat': '45.5202471',
+          'lon': '-122.6741949',
+          'display_name': 'Portland, Multnomah County, Oregon, USA',
+          'class': 'place',
+          'type': 'city',
+          'importance': 0.75356571743377,
+          'icon': 'https://locationiq.org/static/images/mapicons/poi_place_city.p.20.png'
+        }
+      ]
+
+        const expectation = {
+          formatted_query: 'Portland, Multnomah County, Oregon, USA',
+          latitude: '45.5202471',
+          longitude: '-122.6741949'
+        };
+
+        const result = mungeLocation(oldLocation);
+        expect(result).toEqual(expectation);
+    });
+
+    test('returns munged weather', async () => {
+
+      const rawWeather = {
+        'data' : [
+                {
+                    "moonrise_ts": 1604988223,
+                    "wind_cdir": "SSE",
+                    "rh": 89,
+                    "pres": 1004.07,
+                    "high_temp": 20.6,
+                    "sunset_ts": 1605045728,
+                    "ozone": 234.281,
+                    "moon_phase": 0.163076,
+                    "wind_gust_spd": 6.6,
+                    "snow_depth": 0,
+                    "clouds": 42,
+                    "ts": 1604984460,
+                    "sunrise_ts": 1605008675,
+                    "app_min_temp": 11.1,
+                    "wind_spd": 1.45996,
+                    "pop": 20,
+                    "wind_cdir_full": "south-southeast",
+                    "slp": 1021.7,
+                    "moon_phase_lunation": 0.86,
+                    "valid_date": "2020-11-10",
+                    "app_max_temp": 20.7,
+                    "vis": 17.7684,
+                    "dewpt": 14.4,
+                    "snow": 0,
+                    "uv": 3.40157,
+                    "weather": {
+                        "icon": "c03d",
+                        "code": 803,
+                        "description": "Broken clouds"
+                    },
+                    "wind_dir": 166,
+                    "max_dhi": null,
+                    "clouds_hi": 0,
+                    "precip": 0.125,
+                    "low_temp": 15.9,
+                    "max_temp": 21.1,
+                    "moonset_ts": 1605039139,
+                    "datetime": "2020-11-10",
+                    "temp": 16.5,
+                    "min_temp": 11,
+                    "clouds_mid": 0,
+                    "clouds_low": 42
+                },
+                {
+                    "moonrise_ts": 1605078837,
+                    "wind_cdir": "SSE",
+                    "rh": 98,
+                    "pres": 997.943,
+                    "high_temp": 20,
+                    "sunset_ts": 1605132081,
+                    "ozone": 238.829,
+                    "moon_phase": 0.0832398,
+                    "wind_gust_spd": 11.1,
+                    "snow_depth": 0,
+                    "clouds": 74,
+                    "ts": 1605070860,
+                    "sunrise_ts": 1605095138,
+                    "app_min_temp": 15.9,
+                    "wind_spd": 1.28687,
+                    "pop": 40,
+                    "wind_cdir_full": "south-southeast",
+                    "slp": 1015.36,
+                    "moon_phase_lunation": 0.89,
+                    "valid_date": "2020-11-11",
+                    "app_max_temp": 20.6,
+                    "vis": 22.5417,
+                    "dewpt": 18,
+                    "snow": 0,
+                    "uv": 2.17636,
+                    "weather": {
+                        "icon": "c04d",
+                        "code": 804,
+                        "description": "Overcast clouds"
+                    },
+                    "wind_dir": 147,
+                    "max_dhi": null,
+                    "clouds_hi": 11,
+                    "precip": 2.0625,
+                    "low_temp": 18,
+                    "max_temp": 20,
+                    "moonset_ts": 1605127429,
+                    "datetime": "2020-11-11",
+                    "temp": 18.4,
+                    "min_temp": 15.9,
+                    "clouds_mid": 34,
+                    "clouds_low": 71
+                },
+                {
+                    "moonrise_ts": 1605169540,
+                    "wind_cdir": "SE",
+                    "rh": 95,
+                    "pres": 993.976,
+                    "high_temp": 18.5,
+                    "sunset_ts": 1605218435,
+                    "ozone": 242.597,
+                    "moon_phase": 0.0278516,
+                    "wind_gust_spd": 7.13003,
+                    "snow_depth": 0,
+                    "clouds": 97,
+                    "ts": 1605157260,
+                    "sunrise_ts": 1605181602,
+                    "app_min_temp": 12,
+                    "wind_spd": 1.38975,
+                    "pop": 95,
+                    "wind_cdir_full": "southeast",
+                    "slp": 1014.25,
+                    "moon_phase_lunation": 0.93,
+                    "valid_date": "2020-11-12",
+                    "app_max_temp": 19.2,
+                    "vis": 17.0001,
+                    "dewpt": 14.8,
+                    "snow": 0,
+                    "uv": 1.32101,
+                    "weather": {
+                        "icon": "r03d",
+                        "code": 502,
+                        "description": "Heavy rain"
+                    },
+                    "wind_dir": 146,
+                    "max_dhi": null,
+                    "clouds_hi": 63,
+                    "precip": 18.8125,
+                    "low_temp": 11.3,
+                    "max_temp": 18.9,
+                    "moonset_ts": 1605215808,
+                    "datetime": "2020-11-12",
+                    "temp": 15.6,
+                    "min_temp": 11.6,
+                    "clouds_mid": 67,
+                    "clouds_low": 96
+                },
+                {
+                    "moonrise_ts": 1605260348,
+                    "wind_cdir": "SSW",
+                    "rh": 70,
+                    "pres": 997.241,
+                    "high_temp": 20.2,
+                    "sunset_ts": 1605304791,
+                    "ozone": 264.168,
+                    "moon_phase": 0.00198537,
+                    "wind_gust_spd": 10.5365,
+                    "snow_depth": 0,
+                    "clouds": 92,
+                    "ts": 1605243660,
+                    "sunrise_ts": 1605268065,
+                    "app_min_temp": 8.5,
+                    "wind_spd": 1.72463,
+                    "pop": 20,
+                    "wind_cdir_full": "south-southwest",
+                    "slp": 1018.18,
+                    "moon_phase_lunation": 0.96,
+                    "valid_date": "2020-11-13",
+                    "app_max_temp": 19.7,
+                    "vis": 24.1318,
+                    "dewpt": 8,
+                    "snow": 0,
+                    "uv": 2.10996,
+                    "weather": {
+                        "icon": "c04d",
+                        "code": 804,
+                        "description": "Overcast clouds"
+                    },
+                    "wind_dir": 195,
+                    "max_dhi": null,
+                    "clouds_hi": 44,
+                    "precip": 0.0625,
+                    "low_temp": 4.6,
+                    "max_temp": 20.2,
+                    "moonset_ts": 1605304383,
+                    "datetime": "2020-11-13",
+                    "temp": 13.6,
+                    "min_temp": 7.8,
+                    "clouds_mid": 24,
+                    "clouds_low": 47
+                },
+                {
+                    "moonrise_ts": 1605351269,
+                    "wind_cdir": "SSE",
+                    "rh": 72,
+                    "pres": 1002.07,
+                    "high_temp": 17.6,
+                    "sunset_ts": 1605391149,
+                    "ozone": 258.644,
+                    "moon_phase": 0.00796975,
+                    "wind_gust_spd": 4.61106,
+                    "snow_depth": 0,
+                    "clouds": 17,
+                    "ts": 1605330060,
+                    "sunrise_ts": 1605354529,
+                    "app_min_temp": 0.3,
+                    "wind_spd": 1.30615,
+                    "pop": 0,
+                    "wind_cdir_full": "south-southeast",
+                    "slp": 1023.28,
+                    "moon_phase_lunation": 1,
+                    "valid_date": "2020-11-14",
+                    "app_max_temp": 12.7,
+                    "vis": 24.135,
+                    "dewpt": 3,
+                    "snow": 0,
+                    "uv": 3.97208,
+                    "weather": {
+                        "icon": "c02d",
+                        "code": 801,
+                        "description": "Few clouds"
+                    },
+                    "wind_dir": 149,
+                    "max_dhi": null,
+                    "clouds_hi": 17,
+                    "precip": 0,
+                    "low_temp": 4.1,
+                    "max_temp": 12.8,
+                    "moonset_ts": 1605393260,
+                    "datetime": "2020-11-14",
+                    "temp": 7.9,
+                    "min_temp": 4.1,
+                    "clouds_mid": 4,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1605442261,
+                    "wind_cdir": "SSW",
+                    "rh": 84,
+                    "pres": 996.982,
+                    "high_temp": 13.8,
+                    "sunset_ts": 1605477509,
+                    "ozone": 262.861,
+                    "moon_phase": 0.0448787,
+                    "wind_gust_spd": 9.40855,
+                    "snow_depth": 0,
+                    "clouds": 9,
+                    "ts": 1605416460,
+                    "sunrise_ts": 1605440992,
+                    "app_min_temp": 1.6,
+                    "wind_spd": 1.80806,
+                    "pop": 0,
+                    "wind_cdir_full": "south-southwest",
+                    "slp": 1017.89,
+                    "moon_phase_lunation": 0.03,
+                    "valid_date": "2020-11-15",
+                    "app_max_temp": 17.6,
+                    "vis": 24.1349,
+                    "dewpt": 7.8,
+                    "snow": 0,
+                    "uv": 3.83688,
+                    "weather": {
+                        "icon": "c02d",
+                        "code": 801,
+                        "description": "Few clouds"
+                    },
+                    "wind_dir": 209,
+                    "max_dhi": null,
+                    "clouds_hi": 9,
+                    "precip": 0,
+                    "low_temp": 6.2,
+                    "max_temp": 18.3,
+                    "moonset_ts": 1605482530,
+                    "datetime": "2020-11-15",
+                    "temp": 10.6,
+                    "min_temp": 5.1,
+                    "clouds_mid": 0,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1605533197,
+                    "wind_cdir": "W",
+                    "rh": 67,
+                    "pres": 993.41,
+                    "high_temp": 10.2,
+                    "sunset_ts": 1605563871,
+                    "ozone": 265.511,
+                    "moon_phase": 0.108721,
+                    "wind_gust_spd": 12.8141,
+                    "snow_depth": 0,
+                    "clouds": 15,
+                    "ts": 1605502860,
+                    "sunrise_ts": 1605527455,
+                    "app_min_temp": 0.2,
+                    "wind_spd": 3.29619,
+                    "pop": 20,
+                    "wind_cdir_full": "west",
+                    "slp": 1014.44,
+                    "moon_phase_lunation": 0.06,
+                    "valid_date": "2020-11-16",
+                    "app_max_temp": 13.8,
+                    "vis": 24.135,
+                    "dewpt": 4.5,
+                    "snow": 0,
+                    "uv": 3.33353,
+                    "weather": {
+                        "icon": "c02d",
+                        "code": 801,
+                        "description": "Few clouds"
+                    },
+                    "wind_dir": 262,
+                    "max_dhi": null,
+                    "clouds_hi": 8,
+                    "precip": 0.0625,
+                    "low_temp": -0.3,
+                    "max_temp": 14,
+                    "moonset_ts": 1605572222,
+                    "datetime": "2020-11-16",
+                    "temp": 11.1,
+                    "min_temp": 2.3,
+                    "clouds_mid": 0,
+                    "clouds_low": 8
+                },
+                {
+                    "moonrise_ts": 1605623872,
+                    "wind_cdir": "W",
+                    "rh": 51,
+                    "pres": 1003.54,
+                    "high_temp": 15.3,
+                    "sunset_ts": 1605650234,
+                    "ozone": 277.24,
+                    "moon_phase": 0.193272,
+                    "wind_gust_spd": 6.82355,
+                    "snow_depth": 0,
+                    "clouds": 4,
+                    "ts": 1605589260,
+                    "sunrise_ts": 1605613919,
+                    "app_min_temp": -5.3,
+                    "wind_spd": 1.86145,
+                    "pop": 0,
+                    "wind_cdir_full": "west",
+                    "slp": 1025.45,
+                    "moon_phase_lunation": 0.1,
+                    "valid_date": "2020-11-17",
+                    "app_max_temp": 10.2,
+                    "vis": 24.135,
+                    "dewpt": -5.1,
+                    "snow": 0,
+                    "uv": 3.73042,
+                    "weather": {
+                        "icon": "c02d",
+                        "code": 801,
+                        "description": "Few clouds"
+                    },
+                    "wind_dir": 260,
+                    "max_dhi": null,
+                    "clouds_hi": 4,
+                    "precip": 0,
+                    "low_temp": 2.9,
+                    "max_temp": 10.8,
+                    "moonset_ts": 1605662264,
+                    "datetime": "2020-11-17",
+                    "temp": 4.6,
+                    "min_temp": -0.4,
+                    "clouds_mid": 0,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1605714083,
+                    "wind_cdir": "SW",
+                    "rh": 54,
+                    "pres": 1001.45,
+                    "high_temp": 17.2,
+                    "sunset_ts": 1605736599,
+                    "ozone": 268.342,
+                    "moon_phase": 0.291323,
+                    "wind_gust_spd": 14.8118,
+                    "snow_depth": 0,
+                    "clouds": 26,
+                    "ts": 1605675660,
+                    "sunrise_ts": 1605700382,
+                    "app_min_temp": -1.2,
+                    "wind_spd": 2.61444,
+                    "pop": 0,
+                    "wind_cdir_full": "southwest",
+                    "slp": 1022.85,
+                    "moon_phase_lunation": 0.13,
+                    "valid_date": "2020-11-18",
+                    "app_max_temp": 15.3,
+                    "vis": 24.1351,
+                    "dewpt": -0.2,
+                    "snow": 0,
+                    "uv": 3.75114,
+                    "weather": {
+                        "icon": "c02d",
+                        "code": 802,
+                        "description": "Scattered clouds"
+                    },
+                    "wind_dir": 224,
+                    "max_dhi": null,
+                    "clouds_hi": 24,
+                    "precip": 0,
+                    "low_temp": 5.9,
+                    "max_temp": 16.1,
+                    "moonset_ts": 1605752498,
+                    "datetime": "2020-11-18",
+                    "temp": 8.8,
+                    "min_temp": 2.9,
+                    "clouds_mid": 6,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1605803719,
+                    "wind_cdir": "SSW",
+                    "rh": 68,
+                    "pres": 1001.49,
+                    "high_temp": 12.6,
+                    "sunset_ts": 1605822967,
+                    "ozone": 261.772,
+                    "moon_phase": 0.291323,
+                    "wind_gust_spd": 5.21172,
+                    "snow_depth": 0,
+                    "clouds": 53,
+                    "ts": 1605762060,
+                    "sunrise_ts": 1605786844,
+                    "app_min_temp": 2.4,
+                    "wind_spd": 1.77067,
+                    "pop": 0,
+                    "wind_cdir_full": "south-southwest",
+                    "slp": 1022.88,
+                    "moon_phase_lunation": 0.17,
+                    "valid_date": "2020-11-19",
+                    "app_max_temp": 17.2,
+                    "vis": 24.135,
+                    "dewpt": 4.5,
+                    "snow": 0,
+                    "uv": 2.26361,
+                    "weather": {
+                        "icon": "c03d",
+                        "code": 803,
+                        "description": "Broken clouds"
+                    },
+                    "wind_dir": 201,
+                    "max_dhi": null,
+                    "clouds_hi": 53,
+                    "precip": 0,
+                    "low_temp": 1,
+                    "max_temp": 17.5,
+                    "moonset_ts": 1605838898,
+                    "datetime": "2020-11-19",
+                    "temp": 10.5,
+                    "min_temp": 5.9,
+                    "clouds_mid": 0,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1605892800,
+                    "wind_cdir": "NE",
+                    "rh": 71,
+                    "pres": 1005.95,
+                    "high_temp": 19,
+                    "sunset_ts": 1605909336,
+                    "ozone": 266.484,
+                    "moon_phase": 0.395973,
+                    "wind_gust_spd": 9.30257,
+                    "snow_depth": 0,
+                    "clouds": 60,
+                    "ts": 1605848460,
+                    "sunrise_ts": 1605873307,
+                    "app_min_temp": 8.2,
+                    "wind_spd": 2.19413,
+                    "pop": 0,
+                    "wind_cdir_full": "northeast",
+                    "slp": 1026.68,
+                    "moon_phase_lunation": 0.2,
+                    "valid_date": "2020-11-20",
+                    "app_max_temp": 12.6,
+                    "vis": 24.1349,
+                    "dewpt": 5.1,
+                    "snow": 0,
+                    "uv": 3.20193,
+                    "weather": {
+                        "icon": "c03d",
+                        "code": 803,
+                        "description": "Broken clouds"
+                    },
+                    "wind_dir": 51,
+                    "max_dhi": null,
+                    "clouds_hi": 59,
+                    "precip": 0,
+                    "low_temp": 10.3,
+                    "max_temp": 12.6,
+                    "moonset_ts": 1605929154,
+                    "datetime": "2020-11-20",
+                    "temp": 10.4,
+                    "min_temp": 5.4,
+                    "clouds_mid": 5,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1605981423,
+                    "wind_cdir": "S",
+                    "rh": 66,
+                    "pres": 1007.13,
+                    "high_temp": 16.7,
+                    "sunset_ts": 1605995707,
+                    "ozone": 274.747,
+                    "moon_phase": 0.501488,
+                    "wind_gust_spd": 3.44651,
+                    "snow_depth": 0,
+                    "clouds": 70,
+                    "ts": 1605934860,
+                    "sunrise_ts": 1605959769,
+                    "app_min_temp": 7.4,
+                    "wind_spd": 1.57774,
+                    "pop": 0,
+                    "wind_cdir_full": "south",
+                    "slp": 1028.44,
+                    "moon_phase_lunation": 0.23,
+                    "valid_date": "2020-11-21",
+                    "app_max_temp": 11.4,
+                    "vis": 24.1351,
+                    "dewpt": 2.5,
+                    "snow": 0,
+                    "uv": 1.5553,
+                    "weather": {
+                        "icon": "c03d",
+                        "code": 803,
+                        "description": "Broken clouds"
+                    },
+                    "wind_dir": 186,
+                    "max_dhi": null,
+                    "clouds_hi": 42,
+                    "precip": 0,
+                    "low_temp": 10.4,
+                    "max_temp": 11.4,
+                    "moonset_ts": 1606019318,
+                    "datetime": "2020-11-21",
+                    "temp": 9.4,
+                    "min_temp": 1,
+                    "clouds_mid": 1,
+                    "clouds_low": 28
+                },
+                {
+                    "moonrise_ts": 1606069708,
+                    "wind_cdir": "W",
+                    "rh": 70,
+                    "pres": 1007.1,
+                    "high_temp": 13.5,
+                    "sunset_ts": 1606082080,
+                    "ozone": 267.496,
+                    "moon_phase": 0.603519,
+                    "wind_gust_spd": 5.7,
+                    "snow_depth": 0,
+                    "clouds": 24,
+                    "ts": 1606021260,
+                    "sunrise_ts": 1606046231,
+                    "app_min_temp": -3.6,
+                    "wind_spd": 2.2477,
+                    "pop": 0,
+                    "wind_cdir_full": "west",
+                    "slp": 1028.15,
+                    "moon_phase_lunation": 0.27,
+                    "valid_date": "2020-11-22",
+                    "app_max_temp": 10.7,
+                    "vis": 24.1348,
+                    "dewpt": 0.6,
+                    "snow": 0,
+                    "uv": 3.68153,
+                    "weather": {
+                        "icon": "c02d",
+                        "code": 802,
+                        "description": "Scattered clouds"
+                    },
+                    "wind_dir": 272,
+                    "max_dhi": null,
+                    "clouds_hi": 24,
+                    "precip": 0,
+                    "low_temp": 12.4,
+                    "max_temp": 10.7,
+                    "moonset_ts": 1606022946,
+                    "datetime": "2020-11-22",
+                    "temp": 5.9,
+                    "min_temp": -0.5,
+                    "clouds_mid": 10,
+                    "clouds_low": 0
+                },
+                {
+                    "moonrise_ts": 1606157762,
+                    "wind_cdir": "SW",
+                    "rh": 73,
+                    "pres": 997.53,
+                    "high_temp": 19,
+                    "sunset_ts": 1606168455,
+                    "ozone": 251.955,
+                    "moon_phase": 0.698826,
+                    "wind_gust_spd": 2.9,
+                    "snow_depth": 0,
+                    "clouds": 99,
+                    "ts": 1606107660,
+                    "sunrise_ts": 1606132692,
+                    "app_min_temp": 2,
+                    "wind_spd": 1.40945,
+                    "pop": 0,
+                    "wind_cdir_full": "southwest",
+                    "slp": 1018.64,
+                    "moon_phase_lunation": 0.3,
+                    "valid_date": "2020-11-23",
+                    "app_max_temp": 18.4,
+                    "vis": 24.1352,
+                    "dewpt": 7.1,
+                    "snow": 0,
+                    "uv": 1.13642,
+                    "weather": {
+                        "icon": "c04d",
+                        "code": 804,
+                        "description": "Overcast clouds"
+                    },
+                    "wind_dir": 218,
+                    "max_dhi": null,
+                    "clouds_hi": 99,
+                    "precip": 0,
+                    "low_temp": 5.8,
+                    "max_temp": 19,
+                    "moonset_ts": 1606112850,
+                    "datetime": "2020-11-23",
+                    "temp": 12.2,
+                    "min_temp": 5.5,
+                    "clouds_mid": 0,
+                    "clouds_low": 1
+                },
+                {
+                    "moonrise_ts": 1606245679,
+                    "wind_cdir": "NE",
+                    "rh": 82,
+                    "pres": 999.321,
+                    "high_temp": 17.1,
+                    "sunset_ts": 1606254832,
+                    "ozone": 254.909,
+                    "moon_phase": 0.784846,
+                    "wind_gust_spd": 3.8,
+                    "snow_depth": 0,
+                    "clouds": 66,
+                    "ts": 1606194060,
+                    "sunrise_ts": 1606219153,
+                    "app_min_temp": 10.3,
+                    "wind_spd": 1.43906,
+                    "pop": 0,
+                    "wind_cdir_full": "northeast",
+                    "slp": 1020.02,
+                    "moon_phase_lunation": 0.34,
+                    "valid_date": "2020-11-24",
+                    "app_max_temp": 16.7,
+                    "vis": 24.135,
+                    "dewpt": 10.3,
+                    "snow": 0,
+                    "uv": 2.85198,
+                    "weather": {
+                        "icon": "c03d",
+                        "code": 803,
+                        "description": "Broken clouds"
+                    },
+                    "wind_dir": 50,
+                    "max_dhi": null,
+                    "clouds_hi": 50,
+                    "precip": 0,
+                    "low_temp": 9.6,
+                    "max_temp": 17.1,
+                    "moonset_ts": 1606202669,
+                    "datetime": "2020-11-24",
+                    "temp": 13.5,
+                    "min_temp": 9.6,
+                    "clouds_mid": 5,
+                    "clouds_low": 11
+                },
+                {
+                    "moonrise_ts": 1606333535,
+                    "wind_cdir": "NE",
+                    "rh": 90,
+                    "pres": 1000.18,
+                    "high_temp": 13.8,
+                    "sunset_ts": 1606341211,
+                    "ozone": 250.614,
+                    "moon_phase": 0.859311,
+                    "wind_gust_spd": 9.3,
+                    "snow_depth": 0,
+                    "clouds": 92,
+                    "ts": 1606280460,
+                    "sunrise_ts": 1606305613,
+                    "app_min_temp": 10.4,
+                    "wind_spd": 3.49441,
+                    "pop": 0,
+                    "wind_cdir_full": "northeast",
+                    "slp": 1020.34,
+                    "moon_phase_lunation": 0.37,
+                    "valid_date": "2020-11-25",
+                    "app_max_temp": 13.5,
+                    "vis": 24.1352,
+                    "dewpt": 10.3,
+                    "snow": 0,
+                    "uv": 1.13554,
+                    "weather": {
+                        "icon": "c04d",
+                        "code": 804,
+                        "description": "Overcast clouds"
+                    },
+                    "wind_dir": 38,
+                    "max_dhi": null,
+                    "clouds_hi": 92,
+                    "precip": 0,
+                    "low_temp": 11.9,
+                    "max_temp": 13.8,
+                    "moonset_ts": 1606292455,
+                    "datetime": "2020-11-25",
+                    "temp": 12,
+                    "min_temp": 10.4,
+                    "clouds_mid": 62,
+                    "clouds_low": 53
+                }
+            ],
+            "city_name": "Free Union",
+            "lon": -78.54,
+            "timezone": "America/New_York",
+            "lat": 38.12,
+            "country_code": "US",
+            "state_code": "VA"
+        };
+
+      const expectation = [
+        {
+          forecast: 'Broken clouds',
+          time: '2020-11-10',
+        },
+        {
+          forecast: 'Overcast clouds',
+          time: '2020-11-11',
+        },
+        {
+          forecast: 'Heavy rain',
+          time: '2020-11-12',
+        },
+        {
+          forecast: 'Overcast clouds',
+          time: '2020-11-13',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-14',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-15',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-16',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-17',
+        },
+      ];
       
-      token = signInData.body.token;
-  
-      return done();
-    });
-  
-    afterAll(done => {
-      return client.end(done);
+
+      const result = mungeWeather(rawWeather);
+      expect(result).toEqual(expectation);
     });
 
-  test('returns animals', async() => {
+    
+    test('mungeTrails', async() => {
 
-    const expectation = [
-      {
-        'id': 1,
-        'name': 'bessie',
-        'coolfactor': 3,
-        'owner_id': 1
-      },
-      {
-        'id': 2,
-        'name': 'jumpy',
-        'coolfactor': 4,
-        'owner_id': 1
-      },
-      {
-        'id': 3,
-        'name': 'spot',
-        'coolfactor': 10,
-        'owner_id': 1
-      }
-    ];
+      const expectation = [{
 
-    const data = await fakeRequest(app)
-      .get('/animals')
-      .expect('Content-Type', /json/)
-      .expect(200);
+        name: 'Enchantments Traverse',
+        location: 'Leavenworth, Washington',
+        length: '19.1',
+        stars: '4.9',
+        star_votes:'77',
+        summary: 'An extraordinary hike that takes you through all of the beauty that the Enchantments have to offer!',
+        trail_url: 'https://www.hikingproject.com/trail/7005246/enchantments-traverse',
+        conditions: 'All Clear',
+        condition_date: '2020-10-13'
+    }];
+    const hikingObj = { 
+      trails: [{
+        name: 'Enchantments Traverse',
+        location: 'Leavenworth, Washington',
+        length: '19.1',
+        stars: '4.9',
+        starVotes: '77',
+        summary: 'An extraordinary hike that takes you through all of the beauty that the Enchantments have to offer!',
+        url: 'https://www.hikingproject.com/trail/7005246/enchantments-traverse',
+        conditionStatus: 'All Clear',
+        conditionDate: '2020-10-13'
+      }] };
+      const output = mungeTrail(hikingObj);
+      expect(output).toEqual(expectation);
+   });
 
-    expect(data.body).toEqual(expectation);
+
+   test.only( mungeYelp, async() => {
+     const expectation =[{
+      name: "Voodoo Doughnut - Old Town",
+      image_url: "https://s3-media4.fl.yelpcdn.com/bphoto/qHrzQy5ih2Sjhn7MdsCASw/o.jpg",
+      price:"$",
+      rating: 3.5,
+      url: "https://www.yelp.com/biz/voodoo-doughnut-old-town-portland-2?adjust_creative=uAloQ-HEkaESSLDNSNOiqg&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=uAloQ-HEkaESSLDNSNOiqg",
+     }];
+
+     const reviewObj = {
+      businesses: [{
+           name: "Voodoo Doughnut - Old Town",
+            image_url: "https://s3-media4.fl.yelpcdn.com/bphoto/qHrzQy5ih2Sjhn7MdsCASw/o.jpg",
+            price:"$",
+            rating:3.5,
+            url: "https://www.yelp.com/biz/voodoo-doughnut-old-town-portland-2?adjust_creative=uAloQ-HEkaESSLDNSNOiqg&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=uAloQ-HEkaESSLDNSNOiqg",
+      }] }; 
+
+      const output = mungeYelp(reviewObj);
+      expect(output).toEqual(expectation);
+    });
+
+
   });
 });
+
+  
