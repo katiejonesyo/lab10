@@ -37,15 +37,17 @@ function mungeTrail(trail) {
 
 function mungeYelp(yelp) {
 
-    return yelp.business.map(oneBusiness => {
-        return {
+    return yelp.businesses.map(oneBusiness => {
+        return { 
             name: oneBusiness.name,
             image_url: oneBusiness.image_url,
             price: oneBusiness.price,
             rating: oneBusiness.rating,
             url: oneBusiness.url
+            
+
         }
-    })
+    }).slice(0, 20);
 }
 
 
