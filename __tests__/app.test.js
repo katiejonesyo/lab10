@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { mungeLocation, mungeWeather, mungeTrail} = require('../utils.js');
+const { mungeLocation, mungeWeather, mungeTrail, mungeYelp} = require('../utils.js');
 
 describe('app routes', () => {
   describe('routes', () => {
@@ -758,43 +758,99 @@ describe('app routes', () => {
 
       const expectation = [
         {
-          forecast: 'Scattered clouds',
-          time: '2020-05-05',
-        },
-        {
-          forecast: 'Light snow',
-          time: '2020-05-06',
-        },
-        {
-          forecast: 'Few clouds',
-          time: '2020-05-07',
-        },
-        {
-          forecast: 'Few clouds',
-          time: '2020-05-08',
-        },
-        {
           forecast: 'Broken clouds',
-          time: '2020-05-09',
+          time: '2020-11-10',
         },
         {
           forecast: 'Overcast clouds',
-          time: '2020-05-10',
+          time: '2020-11-11',
+        },
+        {
+          forecast: 'Heavy rain',
+          time: '2020-11-12',
         },
         {
           forecast: 'Overcast clouds',
-          time: '2020-05-11',
+          time: '2020-11-13',
         },
         {
-          forecast: 'Light rain',
-          time: '2020-05-12',
+          forecast: 'Few clouds',
+          time: '2020-11-14',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-15',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-16',
+        },
+        {
+          forecast: 'Few clouds',
+          time: '2020-11-17',
         },
       ];
-      }
+      
 
       const result = mungeWeather(rawWeather);
       expect(result).toEqual(expectation);
     });
+
+    
+    test('mungeTrails', async() => {
+
+      const expectation = [{
+
+        name: 'Enchantments Traverse',
+        location: 'Leavenworth, Washington',
+        length: '19.1',
+        stars: '4.9',
+        star_votes:'77',
+        summary: 'An extraordinary hike that takes you through all of the beauty that the Enchantments have to offer!',
+        trail_url: 'https://www.hikingproject.com/trail/7005246/enchantments-traverse',
+        conditions: 'All Clear',
+        condition_date: '2020-10-13'
+    }];
+    const hikingObj = { 
+      trails: [{
+        name: 'Enchantments Traverse',
+        location: 'Leavenworth, Washington',
+        length: '19.1',
+        stars: '4.9',
+        starVotes: '77',
+        summary: 'An extraordinary hike that takes you through all of the beauty that the Enchantments have to offer!',
+        url: 'https://www.hikingproject.com/trail/7005246/enchantments-traverse',
+        conditionStatus: 'All Clear',
+        conditionDate: '2020-10-13'
+      }] };
+      const output = mungeTrail(hikingObj);
+      expect(output).toEqual(expectation);
+   });
+
+
+   test.only( mungeYelp, async() => {
+     const expectation =[{
+      name: "Voodoo Doughnut - Old Town",
+      image_url: "https://s3-media4.fl.yelpcdn.com/bphoto/qHrzQy5ih2Sjhn7MdsCASw/o.jpg",
+      price:"$",
+      rating: 3.5,
+      url: "https://www.yelp.com/biz/voodoo-doughnut-old-town-portland-2?adjust_creative=uAloQ-HEkaESSLDNSNOiqg&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=uAloQ-HEkaESSLDNSNOiqg",
+     }];
+
+     const reviewObj = {
+      businesses: [{
+           name: "Voodoo Doughnut - Old Town",
+            image_url: "https://s3-media4.fl.yelpcdn.com/bphoto/qHrzQy5ih2Sjhn7MdsCASw/o.jpg",
+            price:"$",
+            rating:3.5,
+            url: "https://www.yelp.com/biz/voodoo-doughnut-old-town-portland-2?adjust_creative=uAloQ-HEkaESSLDNSNOiqg&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=uAloQ-HEkaESSLDNSNOiqg",
+      }] }; 
+
+      const output = mungeYelp(reviewObj);
+      expect(output).toEqual(expectation);
+    });
+
+
   });
 });
 
